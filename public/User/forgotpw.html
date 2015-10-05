@@ -1,0 +1,59 @@
+<!doctype html>
+<head>
+<script type="text/javascript" src="/public/js/jquery-2.0.3.min.js"></script>
+</head>
+<body style="margin-left:100px;" bgcolor="white">
+<h2>
+   <a href="http://www.translunardesigns.com" alt="Trans Lunar Designs" target="_blank" >
+       <img src="/public/img/translunar.png" align="middle"/>REST Test
+   </a>
+</h2>
+<h3>Forgot Password Test</h3>
+
+<form name="resendForm" id="resendForm" method="get">
+<table>
+   <tr><td>Username or email:</td><td><input class="input" type="text" size="25" name="username"></td></tr>
+   <tr><td>
+      <input id="resendFormButton" type="button" value="reset Password">
+      </td><td>
+   </td></tr>
+</table>
+</form>
+  <hr>
+<p></p>
+<p>
+
+<a href="/public/demo.html">Home</a></p>
+
+<script type="text/javascript">
+   $(document).ready(function() {
+     $('#resendFormButton').click(function() { resendFormSubmit(); });
+   });
+
+   function resendFormSubmit() {
+      $.ajax({
+         type: "GET",
+         url: "http://localhost:3000/api/v1/password/sendNew",
+         data: $('#resendForm').serialize(),
+         success: function() {
+           alert('Password has been changed. Please check your email');
+         },
+         error: function(err) {
+            // console.log(err);
+			      alert(JSON.parse(err.responseText).message);
+         },
+         dataType: 'json'
+      });
+   }
+
+   function clearForm() {
+      $('#selectForm')[0].reset();
+      $('#inputForm')[0].reset();
+      $('#resendForm')[0].reset();
+      $('#userSelectList').val(null);
+     $('#role').empty();
+   }
+</script>
+
+</body>
+

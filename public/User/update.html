@@ -1,0 +1,211 @@
+<!doctype html>
+<head>
+<script type="text/javascript" src="/public/js/jquery-2.0.3.min.js"></script>
+</head>
+<body style="margin-left:100px;" bgcolor="white">
+<h2>
+   <a href="http://www.translunardesigns.com" alt="Trans Lunar Designs" target="_blank" >
+       <img src="/public/img/translunar.png" align="middle"/>REST Test
+   </a>
+</h2>
+<h3>Update User</h3>
+<form name="inputForm" id="inputForm" method="get">
+<table>
+   <input class="input" type="hidden" name="id">
+   <tr><td>Name:</td><td><input class="input" type="text" size="25" name="name"></td></tr>
+   <tr><td>Role:</td><td><select name="displayRole" id="roleSelectList"></select><input type="hidden" name="role"></td></tr>
+   <tr><td>Email:</td><td><input class="input" type="text" size="25" name="email"></td></tr>
+   <tr><td>Username:</td><td><input class="input" type="text" size="25" name="username"></td></tr>
+
+   <tr><td>Current Password:</td><td><input class="input" type="text" size="25" name="cPassword"></td></tr>
+   <tr><td>New Password:</td><td><input class="input" type="text" size="25" name="password"></td></tr>
+   <tr><td>Password (Verify):</td><td><input class="input" type="text" size="25" name="vPassword"></td></tr>
+   <tr><td>
+   <tr><td>
+      <input id="formButton" type="button" value="Update">
+      </td><td>
+      <input id="formButtonAdmin" type="button" value="Administrator Update">
+      </td><td>
+      <input id="clearFormButton" type="button" value="Clear Form">
+   </td></tr>
+</table>
+</form>
+<p><font color="green"><b>Changing your password? Enter the current password, followed by the new password. Type the new password again to verify.</b></font></p>
+<p><font color="red"><b>Changing your username? You will also need to change your password.</b></font></p>
+
+  <hr>
+<h3>Update User Image</h3>
+<form name="uploadForm" id="uploadForm" method="get">
+   <input class="input" type="hidden" name="id">
+   <table>
+      <tr><td>
+   <input type="file" id="fileup">
+      </td></tr>
+      <tr><td>
+   <input type="text"  name="image" id="file_base64"/>
+      </td></tr>
+      <tr><td>
+   <input id="uploadButton" type="button" value="Uplaod Image">
+      </td></tr>
+   </table>
+ </form>
+<hr>
+<p>
+<a href="/public/demo.html">Home</a></p>
+<script type="text/javascript">
+   $(document).ready(function() {
+     $('#formButton').click(function() { formSubmit(); });
+     $('#formButtonAdmin').click(function() { formSubmitAdmin(); });
+	 $('#roleSelectList').change(function() { setupRoleForm(); });
+     $('#clearFormButton').click(function() { clearForm(); });
+      $('#uploadButton').click(function() { uploadeFile(); });
+      $("#fileup").change(function(){
+         var v = $(this).val();
+         var reader = new FileReader();
+         reader.readAsDataURL(this.files[0]);
+         reader.onload = function(e){
+            console.log(e.target.result);
+            $('#file_base64').val(e.target.result);
+         };
+      });
+	   loadRoles();
+     checkAuth();
+     $('.input').attr("disabled", "disabled");
+   });
+
+   function loadRoles() {
+      $.ajax({
+         type: "GET",
+         url: "http://localhost:3000/api/v1/roles",
+         data: {},
+         success: function(data) {
+            if (data === null || data.length == 0) {
+               alert("No data found.");
+            } else {
+               console.log(data);
+               buildRolesSelectList(data);
+            }
+         },
+         error:function(err) {
+            console.log(err);
+            alert(JSON.parse(err.responseText).message)
+         },
+         dataType: 'json'
+      });
+   }
+
+   function buildRolesSelectList(dataArr) {
+      $('#roleSelectList').empty();
+      for (i = 0; i < dataArr.length; i++) {
+         $('#roleSelectList').append('<option value="' + dataArr[i] + '" >' + dataArr[i] + '</option>');
+      }
+	  $('#roleSelectList').val('Admin');
+      clearForm();
+   }
+
+   function formSubmit() {
+      $.ajax({
+         type: "PUT",
+         url: "http://localhost:3000/api/v1/user",
+         data: $('#inputForm').serialize(),
+         success: function(data) {
+            alert("Success");
+         },
+         error:function(err) {
+            console.log(err);
+            alert(JSON.parse(err.responseText).message)
+         },
+         dataType: 'json'
+      });
+   }
+
+   function formSubmitAdmin() {
+      $.ajax({
+         type: "PUT",
+          url: "http://localhost:3000/api/v1/admin/user",
+         data: $('#inputForm').serialize(),
+         success: function(data) {
+            alert("Success");
+         },
+         error:function(err) {
+            console.log(err);
+            alert(JSON.parse(err.responseText).message)
+         },
+         dataType: 'json'
+      });
+   }
+
+   function uploadeFile(){
+      var json =$('#uploadForm').serialize();
+      $.ajax({
+         type: "PUT",
+         url: "http://localhost:3000/api/v1/image/user",
+         data: $('#uploadForm').serialize(),
+         success: function(data) {
+            alert("Success");
+         },
+         error:function(err) {
+            console.log(err);
+            alert(JSON.parse(err.responseText).message)
+         },
+         dataType: 'json'
+      });
+   }
+   function setupForm() {
+      $.ajax({
+         type: "GET",
+         url: "http://localhost:3000/api/v1/user",
+         success: function(data) {
+            if (data === null || data.length == 0) {
+               alert("No data found.");
+            } else {
+               console.log(data);
+               $('input[name="id"]').val(data._id);
+               $('input[name="name"]').val(data.name);
+
+			   $("select option").filter(function() {
+					return $(this).text() == data.role;
+				}).prop('selected', true);
+				$('input[name="role"]').val(data.role);
+               $('input[name="username"]').val(data.username);
+               $('input[name="email"]').val(data.email);
+            }
+         },
+         error:function(err) {
+            console.log(err);
+            alert(JSON.parse(err.responseText).message)
+         },
+         dataType: 'json'
+      });
+   }
+   function setupRoleForm() {
+	$('input[name="role"]').val($('#roleSelectList').val());
+   }
+   function clearForm() {
+      $('#inputForm')[0].reset();
+      $('#userSelectList').val(null);
+   }
+   function checkAuth() {
+      $.ajax({
+         type: "GET",
+         url: "http://localhost:3000/api/auth",
+         data: $('#postLoginForm').serialize(),
+       timeout: 2000,
+         success: function(data) {
+           $('input').removeAttr("disabled");
+           setupForm();
+         },
+         error:function(err) {
+            alert("This page will not work until you login.");
+         },
+         dataType: 'json'
+      });
+   }
+</script>
+
+</body>
+
+
+
+
+

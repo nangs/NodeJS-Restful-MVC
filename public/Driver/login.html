@@ -1,0 +1,186 @@
+<!doctype html>
+<head>
+<script type="text/javascript" src="/public/js/jquery-2.0.3.min.js"></script>
+</head>
+<body style="margin-left:100px;" bgcolor="white">
+<h2>
+   <a href="http://www.translunardesigns.com" alt="Trans Lunar Designs" target="_blank" >
+       <img src="/public/img/translunar.png" align="middle"/>REST Test
+   </a>
+</h2>
+<h3>Login Test</h3>
+
+
+<form name="inputForm" id="inputForm">
+<table>
+   <tr><td>Username or email:</td><td><input class="input" type="text" size="25" name="username"></td></tr>
+   <tr><td>Password:</td><td><input class="input" type="text" size="25" name="password"></td></tr>
+   <tr><td>Role:</td><td><div id='role'/></td></tr>
+   <tr><td>
+   <tr>
+      <td>
+         <input id="formButton" type="button" value="Login">
+		 <input id="formButton2" type="button" value="Logout">
+      </td>
+
+     <td>
+         <input id="clearFormButton" type="button" value="Clear Form">
+      </td>
+   </tr>
+</table>
+</form>
+<form name="postLoginForm" id="postLoginForm">
+<table>
+   <tr>
+      <td>
+        <input type="hidden" name="id" id="objectId"/>
+         <input id="formButton3" type="button" style="color:white;background-color: blue;" value="Verify Login Status">
+      </td><td>
+       <input id="formButton4" type="button" style="color:white;background-color: blue;" value="Is User?">
+       <input id="formButton5" type="button" style="color:white;background-color: blue;" value="Is Subscriber?">
+       <input id="formButton6" type="button" style="color:white;background-color: blue;" value="Is Admin?">
+      </td>
+   </tr>
+</table>
+</form>
+<p>
+<ol>
+<li>Create a user with a password</li>
+<li>Try the blue buttons, all return "Forbidden"</li>
+<li>Login with the user</li>
+<li>Verify works</li>
+<li>If user is an Admin, then all "Is ?" buttons should return "Success"</li>
+<li>Logout</li>
+<li>All blue buttons return "Forbidden"</li>
+</ol>
+</p>
+  <hr>
+<p>Resend validation email</p>
+<form name="resendForm" id="resendForm" method="get">
+<table>
+   <tr><td>Username or email:</td><td><input class="input" type="text" size="25" name="username"></td></tr>
+   <tr><td>
+      <input id="resendFormButton" type="button" value="Resend">
+      </td><td>
+   </td></tr>
+</table>
+</form>
+  <hr>
+<p></p>
+
+<a href="/public/demo.html">Home</a></p>
+
+
+<script type="text/javascript">
+   $(document).ready(function() {
+     $('#formButton').click(function() { formSubmit(); });
+     $('#formButton2').click(function() { formSubmit2(); });
+     $('#formButton3').click(function() { formSubmit3(); });
+     $('#formButton4').click(function() { checkRole('User'); });
+     $('#formButton5').click(function() { checkRole('Subscriber'); });
+     $('#formButton6').click(function() { checkRole('Admin'); });
+     $('#resendFormButton').click(function() { resendFormSubmit(); });
+     $('#clearFormButton').click(function() { clearForm(); });
+   });
+
+   function formSubmit() {
+      $.ajax({
+         type: "POST",
+         url: "http://localhost:3000/api/v1/session/login",
+         data: $('#inputForm').serialize(),
+       timeout: 2000,
+         success: function(data, textStatus, xhr) {
+            if (data === null || data.length == 0) {
+               alert("No data found.");
+            } else {
+            alert("Welcome " + data.name);
+            $('input[name="password"]').val('');
+            }
+         },
+         error:function(err) {
+            alert(jQuery.parseJSON(err.responseText ).message);
+         },
+         dataType: 'json'
+      });
+   }
+   function formSubmit2() {
+      $.ajax({
+         type: "GET",
+         url: "http://localhost:3000/api/v1/session/logout",
+         data: {},
+         timeout: 2000,
+         success: function(data) {
+            alert("Logged out");
+         },
+         error:function(err) {
+            alert(jQuery.parseJSON(err.responseText ).message);
+         },
+         dataType: 'json'
+      });
+   }
+   function formSubmit3() {
+      $.ajax({
+         type: "GET",
+         url: "http://localhost:3000/api/auth",
+         data: {},
+       timeout: 2000,
+         success: function(data) {
+            if (data === null || data.length == 0) {
+               alert("No data found.");
+            } else {
+              alert(data.message);
+            }
+         },
+         error:function(err) {
+            alert(jQuery.parseJSON(err.responseText ).message);
+         },
+         dataType: 'json'
+      });
+   }
+
+   function checkRole(role) {
+      $.ajax({
+         type: "GET",
+         url: "http://localhost:3000/api/v1/roles/access",
+         data: {'id':$('#userSelectList').val(), 'role' : role},
+         success: function(data) {
+            if (data === null || data.length == 0) {
+               alert("No data found.");
+            } else {
+              alert(data.message);
+            }
+         },
+         error:function(err) {
+            alert(jQuery.parseJSON(err.responseText ).message);
+         },
+         dataType: 'json'
+      });
+   }
+
+   function resendFormSubmit() {
+      $.ajax({
+         type: "GET",
+         url: "http://localhost:3000/api/v1/verify/resend",
+         data: $('#resendForm').serialize(),
+         success: function() {
+           alert('Use the HTTP link in your email to validate this account.');
+         },
+         error: function(err) {
+            // console.log(err);
+			      alert(JSON.parse(err.responseText).message);
+         },
+         dataType: 'json'
+      });
+   }
+
+   function clearForm() {
+      $('#selectForm')[0].reset();
+      $('#inputForm')[0].reset();
+      $('#resendForm')[0].reset();
+      $('#userSelectList').val(null);
+     $('#role').empty();
+   }
+</script>
+
+</body>
+

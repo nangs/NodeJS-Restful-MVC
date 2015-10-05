@@ -1,0 +1,70 @@
+<!doctype html>
+<head>
+    <script type="text/javascript" src="/public/js/jquery-2.0.3.min.js"></script>
+  <script type="text/javascript" src="/public/js/jquery.url-0.0.1.js"></script>
+  <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+</head>
+<body style="margin-left:100px;" bgcolor="white">
+<h2>
+   <a href="http://www.translunardesigns.com" alt="Trans Lunar Designs" target="_blank" >
+       <img src="/public/img/translunar.png" align="middle"/>REST Test
+   </a>
+</h2>
+<h3>Websocket Test - Socket.io Server</h3>
+
+<form name="inputForm" id="inputForm">
+<table>
+   <tr>
+      <td>
+         <input id="formButton" type="button" value="Start">
+		     <input id="formButton2" type="button" value="Stop">
+      </td>
+   </tr>
+</table>
+</form>
+  <P>Server Time: <span id='output'><span></p>
+
+<p>
+<ol>
+<li>Start the websocket</li>
+<li>See the time update</li>
+<li>Stop the websocket</li>
+</ol>
+</p>
+<hr>
+<p><a href="/public/demo.html">Home</a></p>
+<script type="text/javascript">
+  var ws;
+   $(document).ready(function() {
+     $('#formButton').click(function() { formSubmit(); });
+     $('#formButton2').click(function() { formSubmit2(); });
+   });
+
+
+  function updateStats(dateStr) {
+    document.getElementById('output').innerHTML = dateStr;
+  }
+
+   function formSubmit() {
+      var host = window.document.location.host.replace(/:.*/, '');
+      ws = io.connect('ws://' + host + ':3000');
+      ws.on('connect', function() {
+        ws.on('timestamp', function (data) {
+          updateStats(JSON.parse(data));
+        });
+      });
+
+  }
+  function formSubmit2() {
+    ws.emit('close');
+  }
+
+
+</script>
+<!--
+https://github.com/LearnBoost/socket.io-client
+
+http://socket.io/#how-to-use
+http://stackoverflow.com/questions/6634940/websocket-problem-cannot-connect-to-node-js-server
+-->
+</body>

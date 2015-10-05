@@ -1,0 +1,4 @@
+node_modules/
+mailLog/
+npm-debug.log
+todo.txt

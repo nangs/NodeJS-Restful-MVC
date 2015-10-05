@@ -1,0 +1,148 @@
+<!doctype html>
+<head>
+<script type="text/javascript" src="/public/js/jquery-2.0.3.min.js"></script>
+</head>
+<body style="margin-left:100px;" bgcolor="white">
+<h2>
+   <a href="http://www.translunardesigns.com" alt="Trans Lunar Designs" target="_blank" >
+       <img src="/public/img/translunar.png" align="middle"/>REST Test
+   </a>
+</h2>
+<h3>Read a User</h3>
+<table>
+    <tr>
+        <td><form name="inputForm" id="inputForm" method="get">
+            <table>
+                <tr><td>ID:</td><td><input class="input" type="text" size="25" name="id"></td></tr>
+                <tr><td>Username:</td><td><input class="input" type="text" size="25" name="username"></td></tr>
+                <tr><td></td><td><hr></td></tr>
+                <tr><td></td><td><font size="2" color="blue">Read only.</font></td></tr>
+                <tr><td>Name:</td><td><input class="input" type="text" size="25" name="name" readonly></td></tr>
+                <tr><td>phonenNumber:</td><td><input class="input" type="text" size="11" name="phonenNumber" readonly></td></tr>
+                <tr><td>Role:</td><td><input class="input" type="text" size="25" name="role" readonly></td></tr>
+                <tr><td>Email:</td><td><input class="input" type="text" size="25" name="email" readonly></td></tr>
+                <tr><td>Hashed Password:</td><td><input class="input" type="text" size="50" name="password" readonly></td></tr>
+                <tr><td>
+                <tr><td>
+                    <input id="formButton" type="button" value="Search">
+                </td><td>
+                    <input id="clearFormButton" type="button" value="Clear Form">
+                </td></tr>
+            </table>
+        </form></td>
+        <td>
+            <div id="dynamicTable">
+        </div>
+        </td>
+    </tr>
+</table>
+  <hr>
+<p>
+
+<a href="/public/demo.html">Home</a></p>
+<script type="text/javascript">
+   $(document).ready(function() {
+      $('#formButton').click(function() { formSubmit(); });
+      $('#clearFormButton').click(function() { clearForm(); });
+      $('input').keyup(function() { disableFields(); });
+      checkAuth();
+      $('.input').attr("disabled", "disabled");
+   });
+
+   function formSubmit() {
+       // /api/v1/user returns the current user with no path mod
+       // /api/v1/user/:id replace :id with the id to search for, requires admin access
+       // /api/v1/user/:username replace :username with the username to search for, requires admin access
+       var path = "http://localhost:3000/api/v1/user";
+
+       if ($('input[name="id"]').val().length > 0) {
+           path = path + "/" + $('input[name="id"]').val();
+       } else if ($('input[name="username"]').val().length > 0) {
+           path = path + "/" + $('input[name="username"]').val();
+       }
+      $.ajax({
+         type: "GET",
+         url: path,
+         data: '',
+         success: function(data) {
+            if (data === null || data.length == 0) {
+               alert("No data found.");
+            } else {
+               console.log(data);
+               $('input[name="id"]').val(data._id);
+               $('input[name="name"]').val(data.name);
+                $('input[name="phonenNumber"]').val(data.phonenNumber);
+			   $('input[name="role"]').val(data.role);
+               $('input[name="username"]').val(data.username);
+               $('input[name="email"]').val(data.email);
+			   $('input[name="password"]').val(data.hashed_password);
+               if(data.imageId){
+                   getImage(data.imageId);
+               }
+            }
+         },
+         error:function(err) {
+            console.log(err);
+            alert(JSON.parse(err.responseText).message)
+         },
+         dataType: 'json'
+      });
+   }
+
+   function disableFields() {
+      if ($("*:focus").val() == '') {
+         $('input').removeAttr("disabled");
+      } else {
+         $('.input').attr("disabled", "disabled");
+         $("*:focus").removeAttr("disabled");
+      }
+   }
+   function clearForm() {
+       $("#dynamicTable").empty();
+      $('#inputForm')[0].reset();
+      $('input').removeAttr("disabled");
+   }
+   function checkAuth() {
+      $.ajax({
+         type: "GET",
+         url: "http://localhost:3000/api/auth",
+         data: $('#postLoginForm').serialize(),
+       timeout: 2000,
+         success: function(data) {
+           $('input').removeAttr("disabled");
+         },
+         error:function(err) {
+            alert("This page will not work until you login.");
+         },
+         dataType: 'json'
+      });
+   }
+
+   function getImage(imageId) {
+       $.ajax({
+           type: "GET",
+           url: "http://localhost:3000/api/v1/image",
+           data: {id:imageId},
+           timeout: 2000,
+           success: function(data) {
+               console.log(data);
+               var img = document.createElement('img');
+               var base64=btoa(String.fromCharCode.apply(null, data.img.data.data));//把服务器传来的binary Array 数组转换为图片Base64字符串
+               img.src = 'data:'+data.img.contentType+';base64,' +base64;
+               $("#dynamicTable").empty();
+               $("#dynamicTable").append(img);
+           },
+           error:function(err) {
+               console.log(err);
+               alert(JSON.parse(err.responseText).message)
+           },
+           dataType: 'json'
+       });
+   }
+
+</script>
+
+</body>
+
+
+
